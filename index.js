@@ -11,7 +11,7 @@ function templateList(filelist){
     list += '</ul>';
     return list;
 }
-function templateHTML(title, list, body){
+function templateHTML(title, list, body,control){
   return `
           <!doctype html>
           <html lang="ko">
@@ -23,7 +23,7 @@ function templateHTML(title, list, body){
             <h1><a href="/">WEB</a></h1>
             ${list}
             <h2>${title}</h2>
-            <a href="/create">create</a>
+            ${control}
             <p>${body}</p>
           </body>
           </html>
@@ -37,19 +37,20 @@ const app = http.createServer(function (request, response) {
     if (queryData.id === undefined) {
       const title = 'Welcome'
       const description = 'Hello, Node.js'
+
       fs.readdir('data/', function (err, data){
         const list = templateList(data);
-        const template = templateHTML(title, list, description);
+        //메인화면에서는 create(새 게시글 작성)만 가능하게
+        const template = templateHTML(title, list, description,'<a href="create">create</a>');
         response.writeHead(200)
         response.end(template)
       })
     }else {
       fs.readdir('data/', function (err, data){
-
-        fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
+        fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description){
           const title = queryData.id
           const list = templateList(data);
-          const template = templateHTML(title,list,description)
+          const template = templateHTML(title,list,description,'<a href="create">create</a><a href="update?id=${title}">update</a>');
           response.writeHead(200)
           response.end(template)
         })
@@ -64,8 +65,7 @@ const app = http.createServer(function (request, response) {
               <p><input type="text" name="title" placeholder="title"></p>
               <p><textarea name="description" placeholder="description"></textarea></p>
               <p><input type="submit"></p>
-          </form>
-        `)
+          </form>`, '') //글 생성 중에는 create가 안보이게
          response.writeHead(200);
          response.end(template)
       });
