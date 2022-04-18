@@ -97,13 +97,16 @@ const app = http.createServer(function (request, response) {
                 <p><input type="text" name="title" placeholder="title" value=${title}></p>
                 <p><textarea name="description" placeholder="description">${description}</textarea></p>
                 <p><input type="submit"></p>
-            </form>`, `<a href="/create >create</a><a href="/update?id=${title}">update</a>`) //글 생성 중에는 create가 안보이게
+            </form>`, `<a href="/create >create</a><a href="/update?id=${title}">update</a>
+                              <form action="delete_process" method="post">
+                                  <input type="hidden" name="id" value="${title}">
+                                  <input type="submit" value="delete">
+                              </form>`); //글 생성 중에는 create가 안보이게
            response.writeHead(200);
            response.end(template)
-        });
+        })
       });
-    }
-    else if(pathname === '/update_process'){
+    } else if(pathname === '/update_process'){
       let body = '';
       request.on('data',function (data){
         body += body + data;
@@ -120,7 +123,20 @@ const app = http.createServer(function (request, response) {
             })
         })
       });
-    }else {
+    } else if(pathname === '/delete_process'){
+      let body = '';
+      request.on('data',function (data){
+        body += body + data;
+      });
+      request.on('end',function (){
+        const post = qs.parse(body);
+        const id = post.id; //바꾸기 전에 파일이름(게시글 제목)
+        fs.unlink(`data/${id}`, function (err){
+          response.writeHead(302, {Location:'/'});
+          response.end();
+        });
+      });
+    } else {
       response.writeHead(404)
       response.end('Not found')
     }
