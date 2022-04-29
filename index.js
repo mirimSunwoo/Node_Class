@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const url = require('url');
 const qs = require('querystring');
+const sanitizeHtml = require('sanitize-html');
 
 const template = {
   List: function(filelist) {
@@ -52,8 +53,17 @@ const app = http.createServer(function (request, response) {
       fs.readdir('data/', function (err, data){
         fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description){
           const title = queryData.id
+
+          const sanitizedTitle = sanitizeHtml(title);
+          const sanitizedDescription = sanitizeHtml(description);
+
           const list = template.List(data);
-          const html = template.HTML(title,list,description,`<a href="create">create</a> <a href="/update?id=${title}">update</a>`);
+          const html = template.HTML(title,list,sanitizedDescription,`
+                <a href="create">create</a> <a href="update?id=${sanitizedTitle}">update</a>
+                <form action="delete_process" method="post">
+                    <p><input type="hidden" name="id" value="${sanitizedTitle}"></p>
+                    <p><input type="submit" value="delete"></p>
+                </form>`);
           response.writeHead(200)
           response.end(html)
         })
@@ -93,6 +103,7 @@ const app = http.createServer(function (request, response) {
       //description : 실제 파일안에 내용물(게시글의 내용)
       fs.readFile(`data/${queryData.id}`,"utf-8", function (err, description){
         const title =queryData.id;
+
         const list = template.List(data);
         const html = template.HTML(title, list,`
             <form action="update_process" method="post">
