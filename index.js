@@ -3,23 +3,22 @@ const app = express();
 const template = require('./lib/template.js');
 const fs = require('fs');
 
-app.get('/',function (req,res) {
-
-    fs.readdir('./data', function (err, filelist){
+app.get('/', function (req, res) {
+    fs.readdir('./data', function(err, filelist){
         const title = 'Welcome';
-        //웹페이지의 본문 내용
+        // 웹 페이지의 본문 내용
         const description = 'Hello, Node.js';
-        //게시글 목록
+        // 게시글의 목록
         const list = template.List(filelist);
-        const html = template.HTML(title,list,description,
-            `<a href="/create">create</a>`);
+        const html = template.HTML(title, list, description
+            , `<a href="/create">create</a>`);
         res.send(html);
     });
-});
+})
 
-app.get('/page',function (req,res) {
-    res.send('/page');
+
+app.get('/page/:pageId', function (req, res) {
+    res.send(req.params);
 })
 
 app.listen(3333);
-
