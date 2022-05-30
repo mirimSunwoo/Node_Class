@@ -2,11 +2,12 @@ const express = require('express');
 const app = express();
 const template = require('./lib/template.js');
 const fs = require('fs');
-const qs = require("querystring");
+const compression = require("compression");
 
 
 // body-parser (기존에는 const bodyParser = require('body-parser'); 필요)
 app.use(express.urlencoded({extended: false}));
+app.use(compression()); // 압축
 
 app.get('/', function (req, res) {
     fs.readdir('./data', function(err, filelist){
