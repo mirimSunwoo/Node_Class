@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const template = require('./lib/template.js');
 const fs = require('fs');
+const qs = require("querystring");
 
 app.get('/', function (req, res) {
     fs.readdir('./data', function(err, filelist){
@@ -34,5 +35,40 @@ app.get('/page/:pageId', function (req, res) {
         })
     })
 })
+
+app.get('/create', function (req, res){
+  fs.readdir('./data', function (err, filelist) {
+    const title = 'WEB - create';
+    const list = template.List(filelist);
+    const html = template.HTML(title, list, `
+          <form action="/create_process" method="post">
+            <p><input type="text" name="title" placeholder="title"></p>
+            <p>
+              <textarea name="description" placeholder="description"></textarea>
+            </p>
+            <p>
+              <input type="submit">
+            </p>
+          </form>
+        `, '');
+    res.send(html);
+  });
+});
+
+app.post('/create_process', function(req, res){
+  let body = '';
+  req.on('data', function (data) {
+    body = body + data;
+  });
+  req.on('end', function () {
+    const post = qs.parse(body);
+    const title = post.title;
+    const description = post.description;
+    fs.writeFile(`data/${title}`, description, 'utf-8', function (err) {
+      res.writeHead(302, { Location: `/page/${title}` });
+      res.end();
+    });
+  });
+});
 
 app.listen(4444);
